@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/fkropfhamer/simple-mailing/issues"
   },
-  "homepage": "https://github.com/fkropfhamer/simple-mailing#readme"
+  "homepage": "https://github.com/fkropfhamer/simple-mailing#readme",
+  "dependencies": {
+    "nodemailer": "^6.4.11"
+  }
 }
