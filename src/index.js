@@ -61,6 +61,8 @@ class SimpleMailing {
 
         this.timeoutTime = timeoutTime;
 
+        this.failedReceivers = [];
+
         this.sendNext();
     }
 
@@ -79,7 +81,12 @@ class SimpleMailing {
 
         const receiver = this.receiverList.pop();
 
-        await this.sendMail(this.senderName, this.senderEmail, receiver, this.subject, this.text, this.html);
+        try {
+            await this.sendMail(this.senderName, this.senderEmail, receiver, this.subject, this.text, this.html);    
+        } catch (error) {
+            this.failedReceivers.push(receiver);
+        }
+        
 
         await timeout(this.timeoutTime);
 
