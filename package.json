@@ -1,0 +1,24 @@
+{
+  "name": "simple-mailing",
+  "version": "0.0.0",
+  "description": "module to send mailings",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fkropfhamer/simple-mailing.git"
+  },
+  "keywords": [
+    "mail",
+    "mailings",
+    "mailer"
+  ],
+  "author": "fkropfhamer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fkropfhamer/simple-mailing/issues"
+  },
+  "homepage": "https://github.com/fkropfhamer/simple-mailing#readme"
+}
