@@ -44,7 +44,7 @@ class SimpleMailing {
      * @param {string} html 
      * @param {number} timeoutTime
      */
-    sendMailing(senderName, senderEmail, receiverList, subject, text, html, timeoutTime = 0) {
+    async sendMailing(senderName, senderEmail, receiverList, subject, text, html, timeoutTime = 0) {
         if (this.isRunning) {
             throw Error('Another Mailing is running at the moment');
         }
@@ -52,45 +52,28 @@ class SimpleMailing {
         this.isCancelled = false;
         this.isRunning = true;
 
-        this.senderName = senderName;
-        this.senderEmail = senderEmail;
-        this.receiverList = receiverList;
-        this.subject = subject;
-        this.text = text;
-        this.html = html;
-
-        this.timeoutTime = timeoutTime;
+        timeoutTime = timeoutTime;
 
         this.failedReceivers = [];
 
-        this.sendNext();
-    }
+        for(let i = 0; i < receiverList.length; i++) {
+            if (this.isCancelled) {
+                this.mailingCancelled()
+    
+                break;
+            }
 
-    async sendNext() {  
-        if (this.isCancelled) {
-            this.mailingCancelled()
-
-            return;
+            const receiver = this.receiverList.pop();
+            try {
+                await this.sendMail(this.senderName, this.senderEmail, receiver, this.subject, this.text, this.html);    
+            } catch (error) {
+                this.failedReceivers.push(receiver);
+            }
+            
+            await timeout(this.timeoutTime);
         }
 
-        if (this.receiverList.length === 0) {
-            this.mailingFinished();
-
-            return;
-        }
-
-        const receiver = this.receiverList.pop();
-
-        try {
-            await this.sendMail(this.senderName, this.senderEmail, receiver, this.subject, this.text, this.html);    
-        } catch (error) {
-            this.failedReceivers.push(receiver);
-        }
-        
-
-        await timeout(this.timeoutTime);
-
-        this.sendNext();
+        this.mailingFinished();
     }
 
     /**
