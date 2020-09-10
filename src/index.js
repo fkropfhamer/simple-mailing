@@ -24,13 +24,14 @@ class SimpleMailing {
      * @param {string} text 
      * @param {string} html 
      */
-    sendMail(senderName, senderEmail, receivers, subject, text, html) {
+    sendMail(senderName, senderEmail, receivers, subject, text, html, attachments = []) {
         return this.transporter.sendMail({
             from: `"${senderName} <${senderEmail}>`,
             to: receivers,
             subject,
             text,
-            html
+            html,
+            attachments,
         });
     }
 
@@ -64,8 +65,9 @@ class SimpleMailing {
             }
 
             const receiver = this.receiverList.pop();
+
             try {
-                await this.sendMail(this.senderName, this.senderEmail, receiver, this.subject, this.text, this.html);    
+                await this.sendMail(senderName, senderEmail, receiver, subject, text, html);    
             } catch (error) {
                 this.failedReceivers.push(receiver);
             }
