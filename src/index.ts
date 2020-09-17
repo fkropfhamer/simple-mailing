@@ -1,4 +1,5 @@
 import { createTransport, TransportOptions } from 'nodemailer';
+import Mail = require('nodemailer/lib/mailer');
 
 
 export default class SimpleMailing {
@@ -20,7 +21,7 @@ export default class SimpleMailing {
     }
 
 
-    sendMail(senderName: string, senderEmail:  string, receivers: string[], subject: string, text: string, html: string, attachments = []) {
+    sendMail(senderName: string, senderEmail:  string, receivers: string[], subject: string, text: string, html: string, attachments: Mail.Attachment[] = []) {
         return this.transporter.sendMail({
             from: `"${senderName} <${senderEmail}>`,
             to: receivers,
@@ -69,7 +70,7 @@ export default class SimpleMailing {
     }
 
 
-    private static timeout(ms: number): Promise<void> {
+    private static async timeout(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
