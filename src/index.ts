@@ -1,11 +1,17 @@
 import { createTransport, TransportOptions } from 'nodemailer';
 import Mail = require('nodemailer/lib/mailer');
 
+export enum Events {
+    UPDATE = 'update',
+    FINISH = 'finish',
+}
 
 export default class SimpleMailing {
     private transporter
     private isCancelled = false
     private isRunning = false
+    private onFinish = () => {};
+    private onUpdate = () => {};
     
     constructor(host: string, port: string, user: string, pass: string) {
         this.transporter = createTransport({
@@ -23,7 +29,7 @@ export default class SimpleMailing {
 
     sendMail(senderName: string, senderEmail:  string, receivers: string[], subject: string, text: string, html: string, attachments: Mail.Attachment[] = []) {
         return this.transporter.sendMail({
-            from: `"${senderName} <${senderEmail}>`,
+            from: `"${senderName}" <${senderEmail}>`,
             to: receivers,
             subject,
             text,
@@ -58,15 +64,29 @@ export default class SimpleMailing {
             }
 
             try {
-                await this.sendMail(senderName, senderEmail, [receiver], subject, text, html);    
+                await this.sendMail(senderName, senderEmail, [receiver], subject, text, html);
             } catch (error) {
                 failedReceivers.push(receiver);
             }
+
+            this.onUpdate();
             
             await SimpleMailing.timeout(timeoutTime);
         }
 
         this.mailingFinished();
+    }
+
+
+    setEventlistener(event: Events, fn: () => void) {
+        switch (event) {
+            case Events.FINISH:
+                this.onFinish = fn;
+                break;
+            case Events.UPDATE:
+                this.onUpdate = fn;
+                break;
+        }
     }
 
 
@@ -78,11 +98,12 @@ export default class SimpleMailing {
         this.isCancelled = true;
     }
             
-    mailingFinished() {
+    private mailingFinished() {
         this.isRunning = false;
+        this.onFinish();
     }
 
-    mailingCancelled() {
+    private mailingCancelled() {
         this.isRunning = false;
     }
 }
