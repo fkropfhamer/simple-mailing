@@ -2,10 +2,12 @@
   "name": "simple-mailing",
   "version": "0.0.0",
   "description": "module to send mailings",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc",
+    "prepare" : "npm run build"
   },
   "repository": {
     "type": "git",
