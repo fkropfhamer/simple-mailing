@@ -2,9 +2,12 @@
   "name": "simple-mailing",
   "version": "0.0.0",
   "description": "module to send mailings",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -22,6 +25,13 @@
   },
   "homepage": "https://github.com/fkropfhamer/simple-mailing#readme",
   "dependencies": {
+    "@types/nodemailer": "^6.4.0",
     "nodemailer": "^6.4.11"
-  }
+  },
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  },
+  "files": [
+    "lib/**/*"
+  ]
 }
