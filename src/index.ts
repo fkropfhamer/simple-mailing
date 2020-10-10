@@ -11,9 +11,9 @@ export default class SimpleMailing {
     private transporter
     private isCancelled = false
     private isRunning = false
-    private onFinish = (failedReceivers: string[]) => {};
-    private onUpdate = (progress: number) => {};
-    private onCancel = (receiverList: string[]) => {};
+    finishListeners = [] as ((failedReceivers: string[]) => void)[];
+    updateListeners = [] as ((progress: number) => void)[];
+    cancelListeners = [] as ((receiverList: string[]) => void)[];
     
     constructor(host: string, port: string, user: string, pass: string) {
         this.transporter = createTransport({
@@ -71,7 +71,7 @@ export default class SimpleMailing {
                 failedReceivers.push(receiver);
             }
 
-            this.onUpdate(i + 1);
+            this.update(i + 1);
             
             await SimpleMailing.timeout(timeoutTime);
         }
@@ -80,16 +80,16 @@ export default class SimpleMailing {
     }
 
 
-    setEventlistener(event: Events, fn: () => void) {
+    addEventlistener(event: Events, fn: () => void) {
         switch (event) {
             case Events.FINISH:
-                this.onFinish = fn;
+                this.finishListeners.push(fn);
                 break;
             case Events.UPDATE:
-                this.onUpdate = fn;
+                this.updateListeners.push(fn);
                 break;
             case Events.CANCEL:
-                this.onCancel = fn;
+                this.cancelListeners.push(fn);
                 break;
         }
     }
@@ -105,11 +105,23 @@ export default class SimpleMailing {
             
     private mailingFinished(failedReceivers: string[]) {
         this.isRunning = false;
-        this.onFinish(failedReceivers);
+        this.finish(failedReceivers);
     }
 
     private mailingCancelled(receiverList: string[]) {
         this.isRunning = false;
-        this.onCancel(receiverList);
+        this.cancel(receiverList);
+    }
+
+    private update(progress: number) {
+        this.updateListeners.forEach(l => l(progress));
+    }
+
+    private cancel(receiverList: string[]) {
+        this.cancelListeners.forEach(l => l(receiverList));
+    }
+
+    private finish(failedReceivers: string[]) {
+        this.finishListeners.forEach(l => l(failedReceivers))
     }
 }
