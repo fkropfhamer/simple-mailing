@@ -4,14 +4,16 @@ import Mail = require('nodemailer/lib/mailer');
 export enum Events {
     UPDATE = 'update',
     FINISH = 'finish',
+    CANCEL = 'cancel',
 }
 
 export default class SimpleMailing {
     private transporter
     private isCancelled = false
     private isRunning = false
-    private onFinish = () => {};
-    private onUpdate = () => {};
+    private onFinish = (failedReceivers: string[]) => {};
+    private onUpdate = (progress: number) => {};
+    private onCancel = (receiverList: string[]) => {};
     
     constructor(host: string, port: string, user: string, pass: string) {
         this.transporter = createTransport({
@@ -39,7 +41,7 @@ export default class SimpleMailing {
     }
 
 
-    async sendMailing(senderName: string, senderEmail: string, receiverList: string[], subject: string, text: string, html: string, timeoutTime = 0) {
+    async sendMailing(senderName: string, senderEmail: string, receiverList: string[], subject: string, text: string, html: string, attachments: Mail.Attachment[] = [], timeoutTime = 0) {
         if (this.isRunning) {
             throw Error('Another Mailing is running at the moment');
         }
@@ -47,13 +49,11 @@ export default class SimpleMailing {
         this.isCancelled = false;
         this.isRunning = true;
 
-        timeoutTime = timeoutTime;
-
         const failedReceivers = [];
 
         for(let i = 0; i < receiverList.length; i++) {
             if (this.isCancelled) {
-                this.mailingCancelled()
+                this.mailingCancelled(receiverList);
     
                 break;
             }
@@ -64,17 +64,17 @@ export default class SimpleMailing {
             }
 
             try {
-                await this.sendMail(senderName, senderEmail, [receiver], subject, text, html);
+                await this.sendMail(senderName, senderEmail, [receiver], subject, text, html, attachments);
             } catch (error) {
                 failedReceivers.push(receiver);
             }
 
-            this.onUpdate();
+            this.onUpdate(i + 1);
             
             await SimpleMailing.timeout(timeoutTime);
         }
 
-        this.mailingFinished();
+        this.mailingFinished(failedReceivers);
     }
 
 
@@ -85,6 +85,9 @@ export default class SimpleMailing {
                 break;
             case Events.UPDATE:
                 this.onUpdate = fn;
+                break;
+            case Events.CANCEL:
+                this.onCancel = fn;
                 break;
         }
     }
@@ -98,12 +101,13 @@ export default class SimpleMailing {
         this.isCancelled = true;
     }
             
-    private mailingFinished() {
+    private mailingFinished(failedReceivers: string[]) {
         this.isRunning = false;
-        this.onFinish();
+        this.onFinish(failedReceivers);
     }
 
-    private mailingCancelled() {
+    private mailingCancelled(receiverList: string[]) {
         this.isRunning = false;
+        this.onCancel(receiverList);
     }
 }
