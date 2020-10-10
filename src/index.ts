@@ -51,7 +51,9 @@ export default class SimpleMailing {
 
         const failedReceivers = [];
 
-        for(let i = 0; i < receiverList.length; i++) {
+        const numberOfReceivers = receiverList.length;
+
+        for(let i = 0; i < numberOfReceivers; i++) {
             if (this.isCancelled) {
                 this.mailingCancelled(receiverList);
     
